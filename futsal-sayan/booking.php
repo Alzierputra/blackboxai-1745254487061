@@ -56,7 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                          '$total_harga', '$metode_pembayaran')";
         
         if (mysqli_query($conn, $query)) {
-            $success = "Booking berhasil! Silakan lakukan pembayaran sesuai metode yang dipilih.";
+            $booking_id = mysqli_insert_id($conn);
+            header("Location: invoice.php?booking_id=" . $booking_id);
+            exit();
         } else {
             $error = "Terjadi kesalahan. Silakan coba lagi.";
         }
