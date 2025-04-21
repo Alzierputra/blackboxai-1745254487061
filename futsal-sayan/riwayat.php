@@ -33,6 +33,7 @@ $result = mysqli_query($conn, $query);
                             <th class="px-6 py-3 text-left">Total Harga</th>
                             <th class="px-6 py-3 text-left">Metode Pembayaran</th>
                             <th class="px-6 py-3 text-left">Status</th>
+                            <th class="px-6 py-3 text-left">Invoice</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
@@ -76,6 +77,12 @@ $result = mysqli_query($conn, $query);
                                     <span class="px-2 py-1 text-xs rounded-full <?php echo $status_class; ?>">
                                         <?php echo $status_text; ?>
                                     </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a href="invoice.php?booking_id=<?php echo $booking['id']; ?>" 
+                                       class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                                        <i class="fas fa-file-invoice mr-1"></i> Lihat Invoice
+                                    </a>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
