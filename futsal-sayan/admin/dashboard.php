@@ -63,7 +63,31 @@ $result_recent = mysqli_query($conn, $query_recent);
     </nav>
 
     <div class="container mx-auto px-4 py-8">
-        <h2 class="text-2xl font-bold mb-6">Dashboard Admin</h2>
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">Dashboard Admin</h2>
+            
+            <!-- Filter dan Export -->
+            <div class="flex items-center space-x-4">
+                <form action="" method="GET" class="flex items-center space-x-2">
+                    <input type="date" name="dari" class="border rounded px-2 py-1" value="<?php echo isset($_GET['dari']) ? $_GET['dari'] : ''; ?>">
+                    <span>s/d</span>
+                    <input type="date" name="sampai" class="border rounded px-2 py-1" value="<?php echo isset($_GET['sampai']) ? $_GET['sampai'] : ''; ?>">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">
+                        <i class="fas fa-filter mr-1"></i> Filter
+                    </button>
+                </form>
+                
+                <?php
+                $export_url = "export_excel.php";
+                if (isset($_GET['dari']) && isset($_GET['sampai'])) {
+                    $export_url .= "?dari=" . $_GET['dari'] . "&sampai=" . $_GET['sampai'];
+                }
+                ?>
+                <a href="<?php echo $export_url; ?>" class="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">
+                    <i class="fas fa-file-excel mr-1"></i> Export Excel
+                </a>
+            </div>
+        </div>
 
         <!-- Statistik Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
