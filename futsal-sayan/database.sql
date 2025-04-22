@@ -32,7 +32,7 @@ CREATE TABLE booking (
     jam_mulai TIME NOT NULL,
     jam_selesai TIME NOT NULL,
     total_harga DECIMAL(10,2) NOT NULL,
-    metode_pembayaran ENUM('cod', 'transfer') NOT NULL,
+    metode_pembayaran ENUM('cod', 'transfer', 'qris') NOT NULL,
     status_pembayaran ENUM('pending', 'dikonfirmasi', 'dibatalkan') DEFAULT 'pending',
     tanggal_booking TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),
