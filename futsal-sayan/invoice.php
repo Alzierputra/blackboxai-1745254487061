@@ -95,9 +95,44 @@ if (!$booking) {
         <?php if($booking['metode_pembayaran'] == 'transfer'): ?>
         <div class="mt-2 p-4 bg-gray-50 rounded">
             <p class="font-semibold">Informasi Transfer:</p>
-            <p>Bank BCA</p>
-            <p>No. Rekening: 1234567890</p>
-            <p>A.n: Futsal Sayan Bekasi</p>
+            <p><i class="fas fa-university mr-2"></i>Bank BCA</p>
+            <p><i class="fas fa-credit-card mr-2"></i>No. Rekening: 1234567890</p>
+            <p><i class="fas fa-user mr-2"></i>A.n: Futsal Sayan Bekasi</p>
+            <p class="mt-2 text-sm text-gray-600">Mohon transfer sesuai nominal dan sertakan nomor booking pada berita transfer</p>
+        </div>
+        <?php elseif($booking['metode_pembayaran'] == 'qris'): ?>
+        <div class="mt-2 p-4 bg-gray-50 rounded text-center">
+            <p class="font-semibold mb-2">Scan QRIS untuk Pembayaran:</p>
+            <p class="text-sm text-gray-600 mb-4">Pembayaran dapat dilakukan melalui:</p>
+            <div class="flex justify-center space-x-4 mb-4">
+                <span><i class="fas fa-wallet text-2xl"></i> OVO</span>
+                <span><i class="fas fa-wallet text-2xl"></i> GoPay</span>
+                <span><i class="fas fa-wallet text-2xl"></i> DANA</span>
+                <span><i class="fas fa-wallet text-2xl"></i> ShopeePay</span>
+            </div>
+            <div class="flex justify-center mb-4">
+                <img src="assets/images/qris/qris-code.png" alt="QRIS Code" class="w-48 h-48 border p-2">
+            </div>
+            <p class="text-sm text-gray-600">
+                Nominal yang harus dibayar:<br>
+                <span class="font-bold text-lg">Rp <?php echo number_format($booking['total_harga'], 0, ',', '.'); ?></span>
+            </p>
+            <div class="mt-4 text-sm text-gray-600">
+                <p>1. Buka aplikasi e-wallet Anda</p>
+                <p>2. Pilih Scan QR/QRIS</p>
+                <p>3. Scan QR Code di atas</p>
+                <p>4. Masukkan nominal sesuai yang tertera</p>
+                <p>5. Pembayaran akan dikonfirmasi otomatis</p>
+            </div>
+        </div>
+        <?php elseif($booking['metode_pembayaran'] == 'cod'): ?>
+        <div class="mt-2 p-4 bg-gray-50 rounded">
+            <p class="font-semibold"><i class="fas fa-info-circle mr-2"></i>Informasi Pembayaran di Tempat:</p>
+            <ul class="mt-2 space-y-2 text-gray-600">
+                <li><i class="fas fa-clock mr-2"></i>Harap datang 30 menit sebelum jadwal main</li>
+                <li><i class="fas fa-money-bill-wave mr-2"></i>Siapkan uang pas sebesar Rp <?php echo number_format($booking['total_harga'], 0, ',', '.'); ?></li>
+                <li><i class="fas fa-exclamation-triangle mr-2"></i>Booking akan dibatalkan jika tidak hadir 15 menit setelah jadwal mulai</li>
+            </ul>
         </div>
         <?php endif; ?>
     </div>
