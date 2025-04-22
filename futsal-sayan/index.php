@@ -42,23 +42,69 @@
     <h2 class="text-3xl font-bold text-center mb-8">Lapangan Kami</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <?php
+        require_once 'includes/functions.php';
+        
         $query = "SELECT * FROM lapangan";
         $result = mysqli_query($conn, $query);
+        $tanggal_sekarang = date('Y-m-d');
+        $jam_sekarang = date('H:i:s');
         
         while($lapangan = mysqli_fetch_assoc($result)):
+            // Cek status lapangan saat ini
+            $status = cekStatusLapangan($conn, $lapangan['id'], $tanggal_sekarang, $jam_sekarang);
+            
+            // Ambil jadwal hari ini
+            $jadwal_hari_ini = getJadwalLapangan($conn, $lapangan['id'], $tanggal_sekarang);
         ?>
         <div class="bg-white rounded-lg shadow-md overflow-hidden">
             <img src="assets/images/<?php echo $lapangan['gambar']; ?>" alt="<?php echo $lapangan['nama']; ?>" class="w-full h-48 object-cover">
-            <div class="p-6">
-                <h3 class="text-xl font-semibold mb-2"><?php echo $lapangan['nama']; ?></h3>
-                <p class="text-gray-600 mb-4"><?php echo $lapangan['deskripsi']; ?></p>
-                <div class="flex justify-between items-center">
-                    <span class="text-green-600 font-semibold">Rp <?php echo number_format($lapangan['harga_per_jam'], 0, ',', '.'); ?>/jam</span>
-                    <?php if(isset($_SESSION['user_id']) && $_SESSION['role'] == 'user'): ?>
-                        <a href="booking.php?lapangan=<?php echo $lapangan['id']; ?>" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-300">Booking</a>
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2"><?php echo $lapangan['nama']; ?></h3>
+                    <p class="text-gray-600 mb-4"><?php echo $lapangan['deskripsi']; ?></p>
+                    
+                    <!-- Status Lapangan -->
+                    <div class="mb-4">
+                        <p class="font-semibold mb-2">Status Saat Ini:</p>
+                        <?php if($status['tersedia']): ?>
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                                <i class="fas fa-check-circle mr-1"></i> Tersedia
+                            </span>
+                        <?php else: ?>
+                            <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">
+                                <i class="fas fa-clock mr-1"></i> 
+                                <?php echo $status['keterangan']; ?>
+                                (<?php echo formatJam($status['jam_mulai']); ?> - <?php echo formatJam($status['jam_selesai']); ?>)
+                            </span>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Jadwal Hari Ini -->
+                    <?php if(!empty($jadwal_hari_ini)): ?>
+                    <div class="mb-4">
+                        <p class="font-semibold mb-2">Jadwal Hari Ini:</p>
+                        <div class="space-y-2">
+                            <?php foreach($jadwal_hari_ini as $jadwal): ?>
+                                <div class="bg-gray-50 p-2 rounded text-sm">
+                                    <span class="font-medium"><?php echo formatJam($jadwal['jam_mulai']); ?> - <?php echo formatJam($jadwal['jam_selesai']); ?></span>
+                                    <span class="text-gray-600"> • <?php echo $jadwal['nama_user']; ?></span>
+                                    <?php if($jadwal['status_pembayaran'] == 'pending'): ?>
+                                        <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full ml-2">Menunggu Pembayaran</span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
                     <?php endif; ?>
+
+                    <div class="flex justify-between items-center">
+                        <span class="text-green-600 font-semibold">Rp <?php echo number_format($lapangan['harga_per_jam'], 0, ',', '.'); ?>/jam</span>
+                        <?php if(isset($_SESSION['user_id']) && $_SESSION['role'] == 'user'): ?>
+                            <a href="booking.php?lapangan=<?php echo $lapangan['id']; ?>" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-300">
+                                <i class="fas fa-calendar-plus mr-1"></i> Booking
+                            </a>
+                        <?php endif; ?>
+                    </div>
                 </div>
-            </div>
         </div>
         <?php endwhile; ?>
     </div>
