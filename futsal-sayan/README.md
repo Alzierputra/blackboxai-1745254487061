@@ -5,12 +5,17 @@ Sistem informasi pemesanan lapangan futsal berbasis web untuk Futsal Sayan Bekas
 ## Fitur
 
 - Sistem registrasi dan login user
-- Booking lapangan futsal
+- Booking lapangan futsal dengan fitur:
+  - Pengecekan status lapangan (tersedia/sedang digunakan)
+  - Informasi jadwal booking real-time
+  - Tampilan jadwal booking hari ini
+  - Validasi waktu booking otomatis
 - Pembayaran via transfer bank, QRIS (OVO, GoPay, DANA, ShopeePay), dan COD
 - Riwayat booking untuk user
 - Dashboard admin untuk mengelola booking
 - Konfirmasi pembayaran oleh admin
 - Manajemen lapangan oleh admin
+- Export data booking ke Excel
 
 ## Teknologi yang Digunakan
 
@@ -84,9 +89,26 @@ Sistem informasi pemesanan lapangan futsal berbasis web untuk Futsal Sayan Bekas
 1. User melakukan registrasi akun
 2. Login menggunakan akun yang telah dibuat
 3. Pilih lapangan yang tersedia
-4. Isi form booking (tanggal, jam, metode pembayaran)
-5. Jika memilih transfer, lakukan pembayaran ke rekening yang tertera
-6. Cek status booking di halaman riwayat
+4. Lihat status dan jadwal lapangan:
+   - Status saat ini (tersedia/sedang digunakan)
+   - Jadwal booking hari ini
+   - Nama pemesan dan durasi booking
+5. Isi form booking:
+   - Pilih tanggal (maksimal 7 hari ke depan)
+   - Pilih jam (minimal 1 jam)
+   - Pilih metode pembayaran
+6. Sistem akan menampilkan invoice sesuai metode pembayaran:
+   - Transfer Bank: informasi rekening
+   - QRIS: QR Code untuk scan
+   - COD: instruksi pembayaran di tempat
+7. Cek status booking di halaman riwayat
+
+### Aturan Booking
+- Minimal durasi booking 1 jam
+- Booking dapat dilakukan maksimal 7 hari ke depan
+- Jam operasional: 08:00 - 23:00
+- Pembayaran harus dilakukan dalam 2 jam
+- Untuk COD, datang 30 menit sebelum jadwal
 
 ### Admin
 1. Login menggunakan akun admin
