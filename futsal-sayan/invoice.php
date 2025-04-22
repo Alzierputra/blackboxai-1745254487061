@@ -1,4 +1,4 @@
-<?php
+ <?php
 include 'includes/header.php';
 
 if (!isset($_SESSION['user_id']) || !isset($_GET['booking_id'])) {
@@ -143,35 +143,59 @@ if (!$booking) {
         <?php 
         $status_class = '';
         $status_text = '';
+        $status_icon = '';
         
         switch($booking['status_pembayaran']) {
             case 'pending':
-                $status_class = 'bg-yellow-100 text-yellow-800';
+                $status_class = 'bg-yellow-100 text-yellow-800 border border-yellow-300';
                 $status_text = 'Menunggu Pembayaran';
+                $status_icon = 'clock';
                 break;
             case 'dikonfirmasi':
-                $status_class = 'bg-green-100 text-green-800';
+                $status_class = 'bg-green-100 text-green-800 border border-green-300';
                 $status_text = 'Pembayaran Diterima';
+                $status_icon = 'check-circle';
                 break;
             case 'dibatalkan':
-                $status_class = 'bg-red-100 text-red-800';
+                $status_class = 'bg-red-100 text-red-800 border border-red-300';
                 $status_text = 'Dibatalkan';
+                $status_icon = 'times-circle';
                 break;
         }
         ?>
-        <span class="px-3 py-1 rounded-full <?php echo $status_class; ?>">
-            <?php echo $status_text; ?>
-        </span>
+        <div class="flex items-center space-x-2">
+            <span class="px-4 py-2 rounded-full <?php echo $status_class; ?> flex items-center">
+                <i class="fas fa-<?php echo $status_icon; ?> mr-2"></i>
+                <?php echo $status_text; ?>
+            </span>
+            
+            <?php if($booking['status_pembayaran'] == 'pending' && $booking['metode_pembayaran'] != 'cod'): ?>
+                <span class="text-sm text-red-600">
+                    Harap selesaikan pembayaran dalam 2 jam
+                </span>
+            <?php endif; ?>
+        </div>
     </div>
 
     <!-- Tombol Print -->
-    <div class="flex justify-between items-center mt-8 pt-4 border-t">
-        <p class="text-sm text-gray-600">
-            Invoice ini adalah bukti pembayaran yang sah.
-        </p>
-        <button onclick="window.print()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-            <i class="fas fa-print mr-2"></i> Cetak Invoice
-        </button>
+    <div class="flex justify-between items-center mt-8 pt-4 border-t print:hidden">
+        <div class="text-sm text-gray-600">
+            <p class="font-semibold">Invoice ini adalah bukti pembayaran yang sah.</p>
+            <p>Silakan cetak atau simpan invoice ini.</p>
+        </div>
+        <div class="flex space-x-3">
+            <button onclick="window.history.back()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                <i class="fas fa-arrow-left mr-2"></i> Kembali
+            </button>
+            <button onclick="window.print()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                <i class="fas fa-print mr-2"></i> Cetak Invoice
+            </button>
+        </div>
+    </div>
+
+    <!-- Watermark untuk status pembayaran saat print -->
+    <div class="hidden print:block fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-45 opacity-10 text-6xl font-bold text-<?php echo $booking['status_pembayaran'] == 'dikonfirmasi' ? 'green' : 'red'; ?>-600">
+        <?php echo $booking['status_pembayaran'] == 'dikonfirmasi' ? 'LUNAS' : 'BELUM LUNAS'; ?>
     </div>
 </div>
 
