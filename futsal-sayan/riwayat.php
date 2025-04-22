@@ -79,10 +79,25 @@ $result = mysqli_query($conn, $query);
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <a href="invoice.php?booking_id=<?php echo $booking['id']; ?>" 
-                                       class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
-                                        <i class="fas fa-file-invoice mr-1"></i> Lihat Invoice
-                                    </a>
+                                    <div class="flex flex-col space-y-2">
+                                        <a href="invoice.php?booking_id=<?php echo $booking['id']; ?>" 
+                                           class="flex items-center justify-center bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                                            <i class="fas fa-eye mr-1"></i> Lihat Invoice
+                                        </a>
+                                        <a href="invoice.php?booking_id=<?php echo $booking['id']; ?>&print=true" 
+                                           target="_blank"
+                                           class="flex items-center justify-center bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                                            <i class="fas fa-print mr-1"></i> Cetak Invoice
+                                        </a>
+                                        <?php if($booking['status_pembayaran'] == 'pending' && $booking['metode_pembayaran'] != 'cod'): ?>
+                                            <div class="text-center mt-1">
+                                                <span class="text-xs text-red-600">
+                                                    <i class="fas fa-clock mr-1"></i>
+                                                    Menunggu Pembayaran
+                                                </span>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
