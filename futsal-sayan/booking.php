@@ -1,4 +1,4 @@
-<?php 
+. <?php 
 include 'includes/header.php';
 
 // Cek apakah user sudah login
@@ -116,6 +116,10 @@ $lapangan_result = mysqli_query($conn, $query);
                    required>
         </div>
 
+        <!-- Container untuk menampilkan jadwal -->
+        <div id="jadwal-container" class="mb-4"></div>
+
+        <!-- Pemilihan Jam -->
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="jam_mulai">
@@ -128,6 +132,7 @@ $lapangan_result = mysqli_query($conn, $query);
                        min="08:00" 
                        max="22:00"
                        required>
+                <p class="text-sm text-gray-500 mt-1">Buka: 08:00 - 22:00</p>
             </div>
 
             <div>
@@ -141,7 +146,22 @@ $lapangan_result = mysqli_query($conn, $query);
                        min="09:00" 
                        max="23:00"
                        required>
+                <p class="text-sm text-gray-500 mt-1">Tutup: 23:00</p>
             </div>
+        </div>
+
+        <!-- Panduan Booking -->
+        <div class="bg-blue-50 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold text-blue-800 mb-2">
+                <i class="fas fa-info-circle mr-2"></i>Panduan Booking:
+            </h4>
+            <ul class="text-sm text-blue-700 space-y-1">
+                <li>• Minimal durasi booking 1 jam</li>
+                <li>• Jam operasional: 08:00 - 23:00</li>
+                <li>• Booking dapat dilakukan maksimal 7 hari ke depan</li>
+                <li>• Pembayaran harus dilakukan dalam 2 jam setelah booking</li>
+                <li>• Untuk pembayaran COD, harap datang 30 menit sebelum jadwal</li>
+            </ul>
         </div>
 
         <div>
@@ -171,9 +191,49 @@ $lapangan_result = mysqli_query($conn, $query);
     </form>
 </div>
 
+<!-- Script untuk booking -->
+<script src="assets/js/booking.js"></script>
+
 <script>
-document.getElementById('jam_mulai').addEventListener('change', function() {
-    document.getElementById('jam_selesai').min = this.value;
+document.addEventListener('DOMContentLoaded', function() {
+    // Validasi jam booking
+    document.getElementById('jam_mulai').addEventListener('change', function() {
+        const jamMulai = this.value;
+        const jamSelesai = document.getElementById('jam_selesai');
+        
+        // Set minimum jam selesai 1 jam setelah jam mulai
+        const [hours, minutes] = jamMulai.split(':');
+        const date = new Date();
+        date.setHours(parseInt(hours));
+        date.setMinutes(parseInt(minutes));
+        date.setHours(date.getHours() + 1);
+        
+        const minJamSelesai = 
+            String(date.getHours()).padStart(2, '0') + ':' +
+            String(date.getMinutes()).padStart(2, '0');
+        
+        jamSelesai.min = minJamSelesai;
+        
+        // Reset jam selesai jika lebih awal dari jam mulai
+        if (jamSelesai.value && jamSelesai.value <= jamMulai) {
+            jamSelesai.value = minJamSelesai;
+        }
+    });
+
+    // Batasi tanggal booking maksimal 7 hari ke depan
+    const tanggalInput = document.getElementById('tanggal');
+    const today = new Date();
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 7);
+
+    tanggalInput.min = today.toISOString().split('T')[0];
+    tanggalInput.max = maxDate.toISOString().split('T')[0];
+
+    // Cek jadwal saat halaman dimuat jika ada lapangan yang dipilih
+    const lapanganId = document.getElementById('lapangan_id').value;
+    if (lapanganId) {
+        checkJadwal();
+    }
 });
 </script>
 
