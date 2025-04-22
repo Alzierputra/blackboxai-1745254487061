@@ -150,10 +150,16 @@ $lapangan_result = mysqli_query($conn, $query);
             </label>
             <div class="space-y-2">
                 <label class="block">
-                    <input type="radio" name="metode_pembayaran" value="transfer" required> Transfer Bank
+                    <input type="radio" name="metode_pembayaran" value="transfer" required> 
+                    <i class="fas fa-university mr-2"></i>Transfer Bank
                 </label>
                 <label class="block">
-                    <input type="radio" name="metode_pembayaran" value="cod" required> Bayar di Tempat (COD)
+                    <input type="radio" name="metode_pembayaran" value="qris" required> 
+                    <i class="fas fa-qrcode mr-2"></i>QRIS (OVO, GoPay, Dana, dll)
+                </label>
+                <label class="block">
+                    <input type="radio" name="metode_pembayaran" value="cod" required> 
+                    <i class="fas fa-money-bill-wave mr-2"></i>Bayar di Tempat (COD)
                 </label>
             </div>
         </div>
