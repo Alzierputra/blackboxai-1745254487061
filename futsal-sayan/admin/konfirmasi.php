@@ -106,7 +106,19 @@ $result = mysqli_query($conn, $query);
                                 </td>
                                 <td class="px-6 py-4">Rp <?php echo number_format($booking['total_harga'], 0, ',', '.'); ?></td>
                                 <td class="px-6 py-4">
-                                    <?php echo $booking['metode_pembayaran'] == 'transfer' ? 'Transfer Bank' : 'Bayar di Tempat'; ?>
+                                    <?php 
+                                    switch($booking['metode_pembayaran']) {
+                                        case 'transfer':
+                                            echo '<span class="flex items-center"><i class="fas fa-university mr-2"></i>Transfer Bank</span>';
+                                            break;
+                                        case 'qris':
+                                            echo '<span class="flex items-center"><i class="fas fa-qrcode mr-2"></i>QRIS</span>';
+                                            break;
+                                        case 'cod':
+                                            echo '<span class="flex items-center"><i class="fas fa-money-bill-wave mr-2"></i>Bayar di Tempat</span>';
+                                            break;
+                                    }
+                                    ?>
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex space-x-2">
