@@ -6,7 +6,7 @@ Sistem informasi pemesanan lapangan futsal berbasis web untuk Futsal Sayan Bekas
 
 - Sistem registrasi dan login user
 - Booking lapangan futsal
-- Pembayaran via transfer dan COD
+- Pembayaran via transfer bank, QRIS (OVO, GoPay, DANA, ShopeePay), dan COD
 - Riwayat booking untuk user
 - Dashboard admin untuk mengelola booking
 - Konfirmasi pembayaran oleh admin
@@ -94,11 +94,25 @@ Sistem informasi pemesanan lapangan futsal berbasis web untuk Futsal Sayan Bekas
 3. Konfirmasi pembayaran user
 4. Monitor booking melalui dashboard
 
-## Informasi Pembayaran Transfer
+## Informasi Pembayaran
 
-Bank: BCA
-No. Rekening: 1234567890
-Atas Nama: Futsal Sayan Bekasi
+### Transfer Bank
+- Bank: BCA
+- No. Rekening: 1234567890
+- Atas Nama: Futsal Sayan Bekasi
+
+### QRIS
+- Mendukung pembayaran melalui:
+  - OVO
+  - GoPay
+  - DANA
+  - ShopeePay
+- Pembayaran dikonfirmasi otomatis
+
+### COD (Cash On Delivery)
+- Pembayaran dilakukan di tempat
+- Harap datang 30 menit sebelum jadwal main
+- Siapkan uang pas
 
 ## Jam Operasional
 
