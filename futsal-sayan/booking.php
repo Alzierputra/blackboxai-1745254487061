@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         // Hitung tanggal akhir booking
         if ($tipe_booking == 'harian') {
-            $tanggal_akhir = $tanggal;
+            $tanggal_akhir = date('Y-m-d', strtotime($tanggal . " + " . ($jumlah_booking - 1) . " day"));
         } elseif ($tipe_booking == 'mingguan') {
             $tanggal_akhir = date('Y-m-d', strtotime($tanggal . " + " . ($jumlah_booking - 1) . " week"));
         } elseif ($tipe_booking == 'bulanan') {
@@ -280,9 +280,15 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateBookingOptions() {
         const tipe = tipeBookingSelect.value;
         if (tipe === 'harian') {
-            jumlahBookingContainer.classList.add('hidden');
+            jumlahBookingContainer.classList.remove('hidden');
             hariBookingContainer.classList.add('hidden');
             jumlahBookingSelect.innerHTML = '';
+            for (let i = 1; i <= 7; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.text = i + (i === 1 ? ' Hari' : ' Hari');
+                jumlahBookingSelect.appendChild(option);
+            }
         } else if (tipe === 'mingguan') {
             jumlahBookingContainer.classList.remove('hidden');
             hariBookingContainer.classList.remove('hidden');
