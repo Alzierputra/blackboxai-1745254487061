@@ -73,4 +73,34 @@ function getJadwalLapangan($conn, $lapangan_id, $tanggal) {
 function formatJam($jam) {
     return date('H:i', strtotime($jam));
 }
+
+/**
+ * Menghitung harga promo berdasarkan tipe booking
+ * @param float $harga_per_jam Harga per jam lapangan
+ * @param string $jam_mulai Jam mulai booking (format HH:MM:SS)
+ * @param string $jam_selesai Jam selesai booking (format HH:MM:SS)
+ * @param string $tipe_booking Tipe booking: 'harian', 'mingguan', 'bulanan'
+ * @return float Total harga setelah promo
+ */
+function calculatePromoPrice($harga_per_jam, $jam_mulai, $jam_selesai, $tipe_booking) {
+    $start = strtotime($jam_mulai);
+    $end = strtotime($jam_selesai);
+    if ($end <= $start) {
+        return 0; // atau lempar error
+    }
+    $jam = ceil(($end - $start) / 3600); // Durasi dalam jam
+    
+    // Perhitungan untuk harian (default)
+    $total = $harga_per_jam * $jam;
+    
+    if ($tipe_booking === 'mingguan') {
+        // Booking mingguan: berlaku untuk 7 hari dengan diskon 10%
+        $total = $harga_per_jam * $jam * 7 * 0.90;
+    }
+    else if ($tipe_booking === 'bulanan') {
+        // Booking bulanan: berlaku untuk 30 hari dengan diskon 15%
+        $total = $harga_per_jam * $jam * 30 * 0.85;
+    }
+    return $total;
+}
 ?>
