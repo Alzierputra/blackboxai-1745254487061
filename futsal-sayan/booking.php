@@ -1,5 +1,6 @@
-. <?php 
+<?php 
 include 'includes/header.php';
+require_once 'includes/functions.php';
 
 // Cek apakah user sudah login
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'user') {
@@ -16,25 +17,22 @@ if (isset($_GET['lapangan'])) {
     $selected_lapangan = mysqli_fetch_assoc($result);
 }
 
-// Proses booking
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $lapangan_id = mysqli_real_escape_string($conn, $_POST['lapangan_id']);
     $tanggal = mysqli_real_escape_string($conn, $_POST['tanggal']);
     $jam_mulai = mysqli_real_escape_string($conn, $_POST['jam_mulai']);
     $jam_selesai = mysqli_real_escape_string($conn, $_POST['jam_selesai']);
     $metode_pembayaran = mysqli_real_escape_string($conn, $_POST['metode_pembayaran']);
-    
-    // Hitung durasi dan total harga
-    $start = strtotime($jam_mulai);
-    $end = strtotime($jam_selesai);
-    $durasi = ceil(($end - $start) / 3600); // dalam jam
-    
+    $tipe_booking = isset($_POST['tipe_booking']) ? mysqli_real_escape_string($conn, $_POST['tipe_booking']) : 'harian';
+
     // Ambil harga lapangan
     $query = "SELECT harga_per_jam FROM lapangan WHERE id = '$lapangan_id'";
     $result = mysqli_query($conn, $query);
     $lapangan = mysqli_fetch_assoc($result);
-    $total_harga = $durasi * $lapangan['harga_per_jam'];
-    
+
+    // Hitung total harga dengan promo
+    $total_harga = calculatePromoPrice($lapangan['harga_per_jam'], $jam_mulai, $jam_selesai, $tipe_booking);
+
     // Cek ketersediaan lapangan
     $check_query = "SELECT * FROM booking WHERE 
                     lapangan_id = '$lapangan_id' AND 
@@ -42,19 +40,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     ((jam_mulai <= '$jam_mulai' AND jam_selesai > '$jam_mulai') OR
                     (jam_mulai < '$jam_selesai' AND jam_selesai >= '$jam_selesai') OR
                     (jam_mulai >= '$jam_mulai' AND jam_selesai <= '$jam_selesai'))";
-    
+
     $check_result = mysqli_query($conn, $check_query);
-    
+
     if (mysqli_num_rows($check_result) > 0) {
         $error = "Maaf, lapangan sudah dibooking untuk waktu tersebut.";
     } else {
         // Simpan booking
         $user_id = $_SESSION['user_id'];
         $query = "INSERT INTO booking (user_id, lapangan_id, tanggal_main, jam_mulai, jam_selesai, 
-                                     total_harga, metode_pembayaran) 
+                                     total_harga, metode_pembayaran, tipe_booking) 
                   VALUES ('$user_id', '$lapangan_id', '$tanggal', '$jam_mulai', '$jam_selesai', 
-                         '$total_harga', '$metode_pembayaran')";
-        
+                         '$total_harga', '$metode_pembayaran', '$tipe_booking')";
+
         if (mysqli_query($conn, $query)) {
             $booking_id = mysqli_insert_id($conn);
             header("Location: invoice.php?booking_id=" . $booking_id);
@@ -72,16 +70,10 @@ $lapangan_result = mysqli_query($conn, $query);
 
 <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
     <h2 class="text-2xl font-bold text-center text-green-600 mb-6">Booking Lapangan</h2>
-    
+
     <?php if (isset($error)): ?>
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             <?php echo $error; ?>
-        </div>
-    <?php endif; ?>
-    
-    <?php if (isset($success)): ?>
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            <?php echo $success; ?>
         </div>
     <?php endif; ?>
 
@@ -150,18 +142,16 @@ $lapangan_result = mysqli_query($conn, $query);
             </div>
         </div>
 
-        <!-- Panduan Booking -->
-        <div class="bg-blue-50 p-4 rounded-lg mb-4">
-            <h4 class="font-semibold text-blue-800 mb-2">
-                <i class="fas fa-info-circle mr-2"></i>Panduan Booking:
-            </h4>
-            <ul class="text-sm text-blue-700 space-y-1">
-                <li>• Minimal durasi booking 1 jam</li>
-                <li>• Jam operasional: 08:00 - 23:00</li>
-                <li>• Booking dapat dilakukan maksimal 7 hari ke depan</li>
-                <li>• Pembayaran harus dilakukan dalam 2 jam setelah booking</li>
-                <li>• Untuk pembayaran COD, harap datang 30 menit sebelum jadwal</li>
-            </ul>
+        <!-- Tipe Booking -->
+        <div>
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="tipe_booking">
+                Tipe Booking
+            </label>
+            <select id="tipe_booking" name="tipe_booking" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                <option value="harian" selected>Harian</option>
+                <option value="mingguan">Mingguan (Diskon 10%)</option>
+                <option value="bulanan">Bulanan (Diskon 15%)</option>
+            </select>
         </div>
 
         <div>
