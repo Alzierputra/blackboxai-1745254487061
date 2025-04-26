@@ -16,12 +16,12 @@ if (isset($_POST['konfirmasi'])) {
     $success = "Pembayaran berhasil dikonfirmasi!";
 }
 
-// Proses pembatalan booking
-if (isset($_POST['batalkan'])) {
+// Proses tolak pembayaran
+if (isset($_POST['tolak'])) {
     $booking_id = mysqli_real_escape_string($conn, $_POST['booking_id']);
     $query = "UPDATE booking SET status_pembayaran = 'dibatalkan' WHERE id = '$booking_id'";
     mysqli_query($conn, $query);
-    $success = "Booking berhasil dibatalkan!";
+    $success = "Pembayaran berhasil ditolak!";
 }
 
 // Mengambil data booking yang pending
@@ -133,10 +133,10 @@ $result = mysqli_query($conn, $query);
                                         <form method="POST" class="inline">
                                             <input type="hidden" name="booking_id" value="<?php echo $booking['id']; ?>">
                                             <button type="submit" 
-                                                    name="batalkan" 
+                                                    name="tolak" 
                                                     class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                                                    onclick="return confirm('Apakah Anda yakin ingin membatalkan booking ini?')">
-                                                Batalkan
+                                                    onclick="return confirm('Apakah Anda yakin ingin menolak pembayaran ini?')">
+                                                Tolak
                                             </button>
                                         </form>
                                     </div>
