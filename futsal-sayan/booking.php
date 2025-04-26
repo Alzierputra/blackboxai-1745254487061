@@ -24,41 +24,61 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $jam_selesai = mysqli_real_escape_string($conn, $_POST['jam_selesai']);
     $metode_pembayaran = mysqli_real_escape_string($conn, $_POST['metode_pembayaran']);
     $tipe_booking = isset($_POST['tipe_booking']) ? mysqli_real_escape_string($conn, $_POST['tipe_booking']) : 'harian';
+    $jumlah_booking = isset($_POST['jumlah_booking']) ? intval($_POST['jumlah_booking']) : 1;
+    $hari_booking = isset($_POST['hari_booking']) ? mysqli_real_escape_string($conn, $_POST['hari_booking']) : null;
 
-    // Ambil harga lapangan
-    $query = "SELECT harga_per_jam FROM lapangan WHERE id = '$lapangan_id'";
-    $result = mysqli_query($conn, $query);
-    $lapangan = mysqli_fetch_assoc($result);
-
-    // Hitung total harga dengan promo
-    $total_harga = calculatePromoPrice($lapangan['harga_per_jam'], $jam_mulai, $jam_selesai, $tipe_booking);
-
-    // Cek ketersediaan lapangan
-    $check_query = "SELECT * FROM booking WHERE 
-                    lapangan_id = '$lapangan_id' AND 
-                    tanggal_main = '$tanggal' AND 
-                    ((jam_mulai <= '$jam_mulai' AND jam_selesai > '$jam_mulai') OR
-                    (jam_mulai < '$jam_selesai' AND jam_selesai >= '$jam_selesai') OR
-                    (jam_mulai >= '$jam_mulai' AND jam_selesai <= '$jam_selesai'))";
-
-    $check_result = mysqli_query($conn, $check_query);
-
-    if (mysqli_num_rows($check_result) > 0) {
-        $error = "Maaf, lapangan sudah dibooking untuk waktu tersebut.";
+    // Validasi pembayaran minimal 30 menit sebelum bermain
+    if (isPaymentDeadlinePassed($tanggal, $jam_mulai)) {
+        $error = "Booking tidak dapat dilakukan karena waktu pembayaran kurang dari 30 menit sebelum bermain.";
     } else {
-        // Simpan booking
-        $user_id = $_SESSION['user_id'];
-        $query = "INSERT INTO booking (user_id, lapangan_id, tanggal_main, jam_mulai, jam_selesai, 
-                                     total_harga, metode_pembayaran, tipe_booking) 
-                  VALUES ('$user_id', '$lapangan_id', '$tanggal', '$jam_mulai', '$jam_selesai', 
-                         '$total_harga', '$metode_pembayaran', '$tipe_booking')";
+        // Ambil harga lapangan
+        $query = "SELECT harga_per_jam FROM lapangan WHERE id = '$lapangan_id'";
+        $result = mysqli_query($conn, $query);
+        $lapangan = mysqli_fetch_assoc($result);
 
-        if (mysqli_query($conn, $query)) {
-            $booking_id = mysqli_insert_id($conn);
-            header("Location: invoice.php?booking_id=" . $booking_id);
-            exit();
+        // Hitung tanggal akhir booking
+        if ($tipe_booking == 'harian') {
+            $tanggal_akhir = $tanggal;
+        } elseif ($tipe_booking == 'mingguan') {
+            $tanggal_akhir = date('Y-m-d', strtotime($tanggal . " + " . ($jumlah_booking - 1) . " week"));
+        } elseif ($tipe_booking == 'bulanan') {
+            $tanggal_akhir = date('Y-m-d', strtotime($tanggal . " + " . ($jumlah_booking - 1) . " month"));
         } else {
-            $error = "Terjadi kesalahan. Silakan coba lagi.";
+            $tanggal_akhir = $tanggal;
+        }
+
+        // Hitung total harga dengan promo
+        $total_harga = calculatePromoPrice($lapangan['harga_per_jam'], $jam_mulai, $jam_selesai, $tipe_booking, $jumlah_booking);
+
+        // Cek ketersediaan lapangan untuk periode booking
+        $check_query = "SELECT * FROM booking WHERE 
+                        lapangan_id = '$lapangan_id' AND 
+                        ((tanggal_main BETWEEN '$tanggal' AND '$tanggal_akhir') OR
+                         (tanggal_akhir BETWEEN '$tanggal' AND '$tanggal_akhir')) AND
+                        ((jam_mulai <= '$jam_mulai' AND jam_selesai > '$jam_mulai') OR
+                         (jam_mulai < '$jam_selesai' AND jam_selesai >= '$jam_selesai') OR
+                         (jam_mulai >= '$jam_mulai' AND jam_selesai <= '$jam_selesai')) AND
+                        status_pembayaran != 'dibatalkan'";
+
+        $check_result = mysqli_query($conn, $check_query);
+
+        if (mysqli_num_rows($check_result) > 0) {
+            $error = "Maaf, lapangan sudah dibooking untuk waktu tersebut dalam periode yang dipilih.";
+        } else {
+            // Simpan booking
+            $user_id = $_SESSION['user_id'];
+            $query = "INSERT INTO booking (user_id, lapangan_id, tanggal_main, jam_mulai, jam_selesai, 
+                                         total_harga, metode_pembayaran, tipe_booking, jumlah_booking, tanggal_akhir, hari_booking) 
+                      VALUES ('$user_id', '$lapangan_id', '$tanggal', '$jam_mulai', '$jam_selesai', 
+                             '$total_harga', '$metode_pembayaran', '$tipe_booking', '$jumlah_booking', '$tanggal_akhir', '$hari_booking')";
+
+            if (mysqli_query($conn, $query)) {
+                $booking_id = mysqli_insert_id($conn);
+                header("Location: invoice.php?booking_id=" . $booking_id);
+                exit();
+            } else {
+                $error = "Terjadi kesalahan. Silakan coba lagi.";
+            }
         }
     }
 }
@@ -154,6 +174,32 @@ $lapangan_result = mysqli_query($conn, $query);
             </select>
         </div>
 
+        <!-- Jumlah Booking -->
+        <div id="jumlah_booking_container" class="hidden">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="jumlah_booking">
+                Jumlah Booking
+            </label>
+            <select id="jumlah_booking" name="jumlah_booking" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <!-- Options akan diisi oleh JS -->
+            </select>
+        </div>
+
+        <!-- Hari Booking (untuk mingguan/bulanan) -->
+        <div id="hari_booking_container" class="hidden">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="hari_booking">
+                Hari Booking
+            </label>
+            <select id="hari_booking" name="hari_booking" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <option value="senin">Senin</option>
+                <option value="selasa">Selasa</option>
+                <option value="rabu">Rabu</option>
+                <option value="kamis">Kamis</option>
+                <option value="jumat">Jumat</option>
+                <option value="sabtu">Sabtu</option>
+                <option value="minggu">Minggu</option>
+            </select>
+        </div>
+
         <div>
             <label class="block text-gray-700 text-sm font-bold mb-2">
                 Metode Pembayaran
@@ -224,6 +270,44 @@ document.addEventListener('DOMContentLoaded', function() {
     if (lapanganId) {
         checkJadwal();
     }
+
+    // Tampilkan/hide jumlah booking dan hari booking sesuai tipe booking
+    const tipeBookingSelect = document.getElementById('tipe_booking');
+    const jumlahBookingContainer = document.getElementById('jumlah_booking_container');
+    const jumlahBookingSelect = document.getElementById('jumlah_booking');
+    const hariBookingContainer = document.getElementById('hari_booking_container');
+
+    function updateBookingOptions() {
+        const tipe = tipeBookingSelect.value;
+        if (tipe === 'harian') {
+            jumlahBookingContainer.classList.add('hidden');
+            hariBookingContainer.classList.add('hidden');
+            jumlahBookingSelect.innerHTML = '';
+        } else if (tipe === 'mingguan') {
+            jumlahBookingContainer.classList.remove('hidden');
+            hariBookingContainer.classList.remove('hidden');
+            jumlahBookingSelect.innerHTML = '';
+            for (let i = 1; i <= 3; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.text = i + (i === 1 ? ' Minggu' : ' Minggu');
+                jumlahBookingSelect.appendChild(option);
+            }
+        } else if (tipe === 'bulanan') {
+            jumlahBookingContainer.classList.remove('hidden');
+            hariBookingContainer.classList.remove('hidden');
+            jumlahBookingSelect.innerHTML = '';
+            for (let i = 1; i <= 6; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.text = i + (i === 1 ? ' Bulan' : ' Bulan');
+                jumlahBookingSelect.appendChild(option);
+            }
+        }
+    }
+
+    tipeBookingSelect.addEventListener('change', updateBookingOptions);
+    updateBookingOptions();
 });
 </script>
 
